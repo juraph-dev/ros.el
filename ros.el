@@ -415,10 +415,11 @@
 
 (defun ros-topic-echo (topic)
   (interactive (list (ros-generic-completing-read "topic")))
-  (let ((cmd (format "rostopic echo %s" topic)))
-    (start-process-shell-command cmd cmd
-                                 (format "/bin/bash -c '%s && %s'" (ros-source-command ros-current-workspace) cmd))
-    (switch-to-buffer cmd)))
+  (let* ((cmd (ros-generic-cmd (format "topic echo %s" topic))))
+    (async-shell-command
+     (format "bash -c '%s && %s'" (ros-current-source-command) cmd)
+     (generate-new-buffer "*ros-topic-echo*"))
+    (switch-to-buffer "*ros-topic-echo*")))
 
 (defun ros-generic-info (type name &optional flags)
   (let* ((buffer-name (format "* %s: %s" (ros-generic-cmd type) name))
