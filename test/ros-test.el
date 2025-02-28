@@ -1,4 +1,6 @@
+;;; -*- lexical-binding: t; -*-
 ;;; ros-test.el --- Tests for ros.el
+
 
 ;; Copyright (C) 2013 Max Beutelspacher
 
@@ -41,7 +43,7 @@
     (shell-command "docker stop ros-el-noetic && docker rm ros-el-noetic"))
   (describe "Correct source command"
     (it "returns the correct source command"
-      (expect (ros-current-source-command) :to-equal "source /opt/ros/noetic/setup.bash && test -f /ws/install/setup.bash && source /ws/install/setup.bash || true")))
+      (expect (ros-current-source-command) :to-equal "source /opt/ros/noetic/setup.bash && test -f /ws/install/setup.bash && source /ws/install/setup.bash 2> /dev/null|| true")))
   (describe "Run Shell commands"
     (it "on local machine"
       (let ((ros-current-workspace (cl-second ros-workspaces)))
@@ -139,6 +141,12 @@
     (it "Can get type of service"
       (expect (ros-service-type "/rosout/get_loggers") :to-equal "roscpp/GetLoggers"))
     )
+  (describe "Can get Mixins from colcon"
+    (it "build"
+      (expect (ros-get-colcon-mixins "build") :to-contain "ccache"))
+    (it "test"
+      (expect (ros-get-colcon-mixins "test") :to-contain "linters-only")
+      ))
 
   (describe "Cache"
     (it "Can Store And Retrieve in the cache"
@@ -178,13 +186,18 @@
     (it  "Detect current package"
       (let ((default-directory (concat (ros-current-tramp-prefix) (ros-current-workspace) "/src/navigation2_tutorials/sam_bot_description")))
         (expect (ros-current-package) :to-equal "sam_bot_description"))))
-(describe "Work with rostopic, rosnode and rosservice"
+  (describe "Work with rostopic, rosnode and rosservice"
     (it "Can list topics"
       (expect (ros-topic-list) :to-equal '("/parameter_events" "/rosout")))
     (it "Can get type of topic"
       (expect (ros-topic-type "/rosout") :to-equal "rcl_interfaces/msg/Log"))
     )
-
+   (describe "Can get Mixins from colcon"
+    (it "build"
+      (expect (ros-get-colcon-mixins "build") :to-contain "ccache"))
+    (it "test"
+      (expect (ros-get-colcon-mixins "test") :to-contain "linters-only")
+      ))
 
   (describe "Work with messages and srvs"
     (it "Can List messages"
@@ -263,7 +276,8 @@
       (with-temp-buffer
         (c++-mode)
         (ros-insert-action-import  "nav2_msgs/action/Wait" (point))
-        (expect (s-trim (buffer-string)) :to-equal "#include <nav2_msgs/action/wait.hpp>")))))
+        (expect (s-trim (buffer-string)) :to-equal "#include <nav2_msgs/action/wait.hpp>"))))
+  )
 
 
 
